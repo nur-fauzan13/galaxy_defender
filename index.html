@@ -185,11 +185,8 @@
             }
 
             move(targetX) {
-                // Smoothing gerakan agar lebih enak di HP
                 const dx = targetX - this.x;
                 this.x += dx * 0.2;
-                
-                // Batasan layar
                 if (this.x < 20) this.x = 20;
                 if (this.x > canvas.width - 20) this.x = canvas.width - 20;
             }
@@ -249,8 +246,7 @@
 
         class Boss {
             constructor() {
-                this.width = canvas.width * 0.4;
-                if (this.width > 200) this.width = 200;
+                this.width = Math.min(canvas.width * 0.4, 200);
                 this.height = 50;
                 this.x = canvas.width / 2;
                 this.y = -100;
@@ -265,7 +261,6 @@
                 ctx.translate(this.x, this.y);
                 ctx.shadowBlur = 25;
                 ctx.shadowColor = '#ff4444';
-                
                 ctx.fillStyle = '#444';
                 ctx.beginPath();
                 ctx.moveTo(-this.width/2, -this.height/2);
@@ -276,7 +271,6 @@
                 ctx.lineTo(-this.width/2 - 20, 0);
                 ctx.closePath();
                 ctx.fill();
-
                 ctx.fillStyle = '#ff4444';
                 ctx.beginPath();
                 ctx.arc(0, 0, 15, 0, Math.PI * 2);
@@ -341,7 +335,6 @@
             mouseX = canvas.width / 2;
         }
 
-        // Input Handlers
         window.addEventListener('mousemove', (e) => mouseX = e.clientX);
         window.addEventListener('touchstart', (e) => {
             if (gameActive) {
@@ -358,10 +351,8 @@
 
         function shoot() {
             if (!gameActive || player.powerUpType === 'Mega Beam') return;
-            
             const now = Date.now();
             const cooldown = player.powerUpType === 'Rapid Fire' ? 80 : 200;
-
             if (now - lastShotTime > cooldown) {
                 if (player.powerUpType === 'Triple Shot') {
                     bullets.push(new Bullet(player.x, player.y - 20, 0));
@@ -381,24 +372,17 @@
 
         function animate() {
             if (!gameActive) return;
-
             ctx.fillStyle = 'rgba(0, 11, 26, 0.5)'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
             player.move(mouseX);
             player.updatePowerUp();
             player.draw();
-
             if (player.powerUpType === 'Rapid Fire') shoot();
-
             if (score > 0 && score % 500 === 0 && !boss) {
                 boss = new Boss();
                 bossUI.style.display = 'block';
             }
-
             if (!boss && Math.random() < 0.03 + (score/30000)) enemies.push(new Enemy());
-
-            // Power-up logic
             powerUps.forEach((p, index) => {
                 p.update();
                 p.draw();
@@ -412,8 +396,6 @@
                 }
                 if (p.y > canvas.height + 50) powerUps.splice(index, 1);
             });
-
-            // Mega Beam Mechanics
             if (player.powerUpType === 'Mega Beam' && player.powerUpTimer > 0) {
                 enemies.forEach((enemy, eIndex) => {
                     if (Math.abs(enemy.x - player.x) < 40) {
@@ -423,8 +405,6 @@
                 });
                 if (boss && Math.abs(boss.x - player.x) < 100) boss.hp -= 2;
             }
-
-            // Bullet Logic
             bullets.forEach((bullet, bIndex) => {
                 bullet.update();
                 bullet.draw();
@@ -437,8 +417,6 @@
                 }
                 if (bullet.y < 0 || bullet.x < 0 || bullet.x > canvas.width) bullets.splice(bIndex, 1);
             });
-
-            // Boss Logic
             if (boss) {
                 boss.update();
                 boss.draw();
@@ -452,8 +430,6 @@
                     else { end(); }
                 }
             }
-
-            // Enemy Logic
             enemies.forEach((enemy, eIndex) => {
                 enemy.update();
                 enemy.draw();
@@ -471,17 +447,14 @@
                 });
                 if (enemy.y > canvas.height + enemy.radius) enemies.splice(eIndex, 1);
             });
-
             scoreElement.innerText = score;
             requestAnimationFrame(animate);
         }
-
         function end() {
             gameActive = false;
             finalScoreElement.innerText = score;
             gameOverScreen.style.display = 'block';
         }
-
         window.onload = () => { init(); animate(); };
     </script>
 </body>
